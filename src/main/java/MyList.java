@@ -60,7 +60,7 @@ public class MyList<T> implements List<T>, AuthorHolder {
         int index = indexOf(o);
         if (index == -1)
             return false;
-        return (boolean) remove(index);
+        return remove(index) != null;
     }
 
     @Override
@@ -82,6 +82,7 @@ public class MyList<T> implements List<T>, AuthorHolder {
 
     @Override
     public boolean addAll(int i, Collection<? extends T> collection) {
+        rangeCheck(i);
         for (Object o: collection) {
             add(i, (T) o);
             i++;
@@ -121,15 +122,13 @@ public class MyList<T> implements List<T>, AuthorHolder {
 
     @Override
     public T get(int i) {
-        if (i < 0 || i > capacity)
-            return null;
+        rangeCheck(i);
         return (T) array[i];
     }
 
     @Override
     public T set(int i, T t) {
-        if (i < 0 || i > capacity)
-            return null;
+        rangeCheck(i);
         T curr_elem = (T) array[i];
         array[i] = t;
         return curr_elem;
@@ -137,6 +136,7 @@ public class MyList<T> implements List<T>, AuthorHolder {
 
     @Override
     public void add(int i, T t) {
+        rangeCheck(i);
         // если массив уже полон, создаем новый массив большего размера
         if (array.length == capacity) {
             Object[] temp_list = new Object[array.length * 2];
@@ -155,8 +155,7 @@ public class MyList<T> implements List<T>, AuthorHolder {
 
     @Override
     public T remove(int i) {
-        if (i < 0 || i > capacity)
-            return null;
+        rangeCheck(i);
         T removedObj = (T)array[i];
         array[i] = null;
         // сдвиг элементов массива влево после удаления
@@ -225,7 +224,7 @@ public class MyList<T> implements List<T>, AuthorHolder {
     private int partition(T[] arr, int low, int high, Comparator<? super T> c) {
         int m = low;
         for (int i = low; i <= high; i++) {
-            if (c.compare(arr[i], arr[high]) >= 0) {
+            if (c.compare(arr[i], arr[high]) <= 0) {
                 T temp = arr[i];
                 arr[i] = arr[m];
                 arr[m] = temp;
@@ -234,11 +233,21 @@ public class MyList<T> implements List<T>, AuthorHolder {
         }
         return m - 1;
     }
-    @Override
-    public String getAuthor() {
-        return "Имя автора: " + "Борщевская Анна";
+
+    private void rangeCheck(int index) {
+        if (index > this.size() || index < 0) {
+            throw new IndexOutOfBoundsException(this.outOfBoundsMsg(index));
+        }
     }
 
+    private String outOfBoundsMsg(int index) {
+        return "Index" + index +" out of bounds for length " + this.size();
+    }
+
+    @Override
+    public String getAuthor() {
+        return "Имя автора: Борщевская Анна";
+    }
 
     private class MyListIterator implements ListIterator<T> {
         int cursor;
